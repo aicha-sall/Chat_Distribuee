@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Distribué DEVNET - {{ service_name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .service-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .service-badge {
+            background: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .service-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #27ae60;
+        }
+        
+        .container {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 20px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+        
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            height: fit-content;
+        }
+        
+        .main-chat {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+        
+        .chat-header {
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .chat-header h2 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .chat-info {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 15px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .message.sent {
+            background: #3498db;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .message.received {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+        
+        .message-header {
+            font-size: 0.8em;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+        
+        .message-content {
+            font-size: 1em;
+            line-height: 1.4;
+        }
+        
+        .message-time {
+            font-size: 0.7em;
+            margin-top: 5px;
+            opacity: 0.7;
+        }
+        
+        .message-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .message-input input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 25px;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .message-input input:focus {
+            border-color: #3498db;
+        }
+        
+        .send-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+        
+        .send-btn:hover {
+            background: #2980b9;
+        }
+        
+        .user-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .user-form {
+            margin-bottom: 20px;
+        }
+        
+        .user-form input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+        
+        .create-user-btn {
+            width: 100%;
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        
+        .create-user-btn:hover {
+            background: #219a52;
+        }
+        
+        .users-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .user-item {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .user-item:hover {
+            background: #e8f5e8;
+        }
+        
+        .user-item.selected {
+            background: #3498db;
+            color: white;
+        }
+        
+        .services-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #ecf0f1;
+        }
+        
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .service-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .service-status.active {
+            background: #27ae60;
+        }
+        
+        .service-status.inactive {
+            background: #e74c3c;
+        }
+        
+        .stats {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 10px;
+            }
+            
+            .sidebar {
+                order: 2;
+            }
+            
+            .main-chat {
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="service-info">
+                <h1>💬 Chat Distribué DEVNET</h1>
+                <span class="service-badge">{{ service_name }}</span>
+            </div>
+            <div class="service-status">
+                <span class="status-dot"></span>
+                <span>En ligne</span>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="sidebar">
+            <div class="user-section">
+                <h3>👤 Utilisateur</h3>
+                <div class="user-form">
+                    <input type="text" id="username" placeholder="Votre nom d'utilisateur">
+                    <button class="create-user-btn" onclick="createUser()">Créer utilisateur</button>
+                </div>
+                
+                <h4>Utilisateurs actifs</h4>
+                <div class="users-list" id="usersList">
+                    <!-- Users will be loaded here -->
+                </div>
+            </div>
+            
+            <div class="services-section">
+                <h3>🌐 Services</h3>
+                <div id="servicesList">
+                    <!-- Services will be loaded here -->
+                </div>
+            </div>
+            
+            <div class="stats">
+                <h4>📊 Statistiques</h4>
+                <div id="statsList">
+                    <!-- Stats will be loaded here -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-chat">
+            <div class="chat-header">
+                <h2>💬 Salon de discussion</h2>
+                <div class="chat-info">Communication inter-services en temps réel</div>
+            </div>
+            
+            <div class="messages" id="messagesContainer">
+                <!-- Messages will be loaded here -->
+            </div>
+            
+            <div class="message-input">
+                <input type="text" id="messageInput" placeholder="Tapez votre message..." onkeypress="handleKeyPress(event)">
+                <button class="send-btn" onclick="sendMessage()">Envoyer</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentUser = null;
+        let selectedUser = null;
+        let refreshInterval;
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            refreshInterval = setInterval(loadData, 3000);
+        });
+        
+        // Charger toutes les données
+        function loadData() {
+            loadMessages();
+            loadUsers();
+            loadServices();
+            loadStats();
+        }
+        
+        // Charger les messages
+        function loadMessages() {
+            fetch('/api/messages')
+                .then(response => response.json())
+                .then(messages => {
+                    const container = document.getElementById('messagesContainer');
+                    container.innerHTML = '';
+                    
+                    messages.forEach(message => {
+                        addMessageToUI(message);
+                    });
+                    
+                    // Scroll vers le bas
+                    container.scrollTop = container.scrollHeight;
+                })
+                .catch(error => console.error('Error loading messages:', error));
+        }
+        
+        // Ajouter un message à l'interface
+        function addMessageToUI(message) {
+            const container = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+            
+            const isSent = currentUser && message.sender_username === currentUser.username;
+            messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+            
+            const time = new Date(message.created_at).toLocaleTimeString();
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <strong>${message.sender_username}</strong>
+                    ${message.receiver_username !== 'All' ? ` → ${message.receiver_username}` : ''}
+                    <span class="message-time">${time}</span>
+                </div>
+                <div class="message-content">${message.content}</div>
+            `;
+            
+            container.appendChild(messageDiv);
+        }
+        
+        // Charger les utilisateurs
+        function loadUsers() {
+            fetch('/api/users')
+                .then(response => response.json())
+                .then(users => {
+                    const container = document.getElementById('usersList');
+                    container.innerHTML = '';
+                    
+                    users.forEach(user => {
+                        const userDiv = document.createElement('div');
+                        userDiv.className = 'user-item';
+                        if (currentUser && user.id === currentUser.id) {
+                            userDiv.className += ' selected';
+                        }
+                        
+                        userDiv.innerHTML = `
+                            <div>
+                                <strong>${user.username}</strong>
+                                <div style="font-size: 0.8em; color: #7f8c8d;">${user.service_name}</div>
+                            </div>
+                        `;
+                        
+                        userDiv.onclick = () => selectUser(user);
+                        container.appendChild(userDiv);
+                    });
+                })
+                .catch(error => console.error('Error loading users:', error));
+        }
+        
+        // Charger les services
+        function loadServices() {
+            fetch('/api/services')
+                .then(response => response.json())
+                .then(services => {
+                    const container = document.getElementById('servicesList');
+                    container.innerHTML = '';
+                    
+                    services.forEach(service => {
+                        const serviceDiv = document.createElement('div');
+                        serviceDiv.className = 'service-item';
+                        
+                        serviceDiv.innerHTML = `
+                            <div>
+                                <strong>${service.name}</strong>
+                                <div style="font-size: 0.8em; color: #7f8c8d;">Port: ${service.port}</div>
+                            </div>
+                            <div class="service-status ${service.status}"></div>
+                        `;
+                        
+                        container.appendChild(serviceDiv);
+                    });
+                })
+                .catch(error => console.error('Error loading services:', error));
+        }
+        
+        // Charger les statistiques
+        function loadStats() {
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(stats => {
+                    const container = document.getElementById('statsList');
+                    container.innerHTML = `
+                        <div class="stat-item">
+                            <span class="stat-label">Total messages:</span>
+                            <span class="stat-value">${stats.total_messages}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Total utilisateurs:</span>
+                            <span class="stat-value">${stats.total_users}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Messages locaux:</span>
+                            <span class="stat-value">${stats.service_messages}</span>
+                        </div>
+                    `;
+                })
+                .catch(error => console.error('Error loading stats:', error));
+        }
+        
+        // Créer un utilisateur
+        function createUser() {
+            const username = document.getElementById('username').value.trim();
+            if (!username) {
+                alert('Veuillez entrer un nom d\'utilisateur');
+                return;
+            }
+            
+            fetch('/api/utilisateurs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username: username })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur réseau');
+                }
+                return response.json();
+            })
+            .then(user => {
+                if (user.error) {
+                    alert(user.error);
+                } else {
+                    currentUser = user;
+                    document.getElementById('username').value = '';
+                    loadUsers();
+                    alert(`Utilisateur ${user.username} créé avec succès!`);
+                }
+            })
+            .catch(error => {
+                console.error('Error creating user:', error);
+                alert('Erreur lors de la création de l\'utilisateur');
+            });
+        }
+        
+        // Sélectionner un utilisateur
+        function selectUser(user) {
+            selectedUser = user;
+            loadUsers();
+        }
+        
+        // Envoyer un message
+        function sendMessage() {
+            const content = document.getElementById('messageInput').value.trim();
+            if (!content) {
+                return;
+            }
+            
+            if (!currentUser) {
+                alert('Veuillez d\'abord créer un utilisateur');
+                return;
+            }
+            
+            const messageData = {
+                content: content,
+                sender_id: currentUser.id,
+                receiver_id: selectedUser ? selectedUser.id : null
+            };
+            
+            fetch('/api/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(messageData)
+            })
+            .then(response => response.json())
+            .then(message => {
+                document.getElementById('messageInput').value = '';
+                loadMessages();
+                loadStats();
+            })
+            .catch(error => console.error('Error sending message:', error));
+        }
+        
+        // Gérer la touche Entrée
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+        
+        // Nettoyer l'intervalle
+        window.addEventListener('beforeunload', function() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+    </script>
+</body>
+</html>
