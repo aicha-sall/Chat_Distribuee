@@ -28,7 +28,7 @@ EXPOSE 5000
 
 # Variables d'environnement
 ENV PYTHONPATH=/app
-ENV FLASK_APP=chat_app.py
+ENV FLASK_APP=app.py
 
 # Commande pour lancer l'application avec Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "chat_app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "app:app"]
